@@ -21,3 +21,10 @@ macro_rules! println {
         $crate::io::__print_impl(format_args!("{}\n", format_args!($($arg)*)));
     }
 }
+
+#[macro_export]
+macro_rules! color_println {
+    ($color:expr, $($arg:tt)*) => {{
+        println!("\x1b[{}m{}\x1b[0m", $color as u8, format_args!($($arg)*));
+    }};
+}
