@@ -55,26 +55,26 @@ extern crate alloc;
 
 #[cfg(feature = "alloc")]
 #[doc(no_inline)]
-pub use alloc::{boxed, collections, format, string, vec};
+pub use alloc::{boxed, format, string, vec};
 
 #[doc(no_inline)]
 pub use core::{arch, cell, cmp, hint, marker, mem, ops, ptr, slice, str};
 
 #[macro_use]
 mod macros;
-
+#[cfg(feature = "alloc")]
+pub mod collections;
 pub mod env;
+#[cfg(feature = "fs")]
+pub mod fs;
 pub mod io;
+#[cfg(feature = "net")]
+pub mod net;
 pub mod os;
 pub mod process;
 pub mod sync;
 pub mod thread;
 pub mod time;
-
-#[cfg(feature = "fs")]
-pub mod fs;
-#[cfg(feature = "net")]
-pub mod net;
 
 #[repr(u8)]
 #[allow(dead_code)]
