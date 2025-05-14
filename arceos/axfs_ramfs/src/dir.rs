@@ -6,6 +6,7 @@ use axfs_vfs::{VfsDirEntry, VfsNodeAttr, VfsNodeOps, VfsNodeRef, VfsNodeType};
 use axfs_vfs::{VfsError, VfsResult};
 use spin::RwLock;
 
+use crate::alloc::string::ToString;
 use crate::file::FileNode;
 
 /// The directory node in the RAM filesystem.
@@ -164,7 +165,30 @@ impl VfsNodeOps for DirNode {
             self.remove_node(name)
         }
     }
+    fn rename(&self, src_path: &str, dst_path: &str) -> VfsResult {
+        log::debug!("rename at ramfs: {} -> {}", src_path, dst_path);
+        let (src_name, rest) = split_path(src_path);
+        if src_name.is_empty() || src_name == "." || src_name == ".." {
+            return Err(VfsError::InvalidInput);
+        }
+        log::debug!("src_name: {}", src_name);
+        let (dst_name, dst_rest) = split_path(dst_path);
+        if dst_name.is_empty() || dst_name == "." || dst_name == ".." {
+            return Err(VfsError::InvalidInput);
+        }
 
+        let node = self.this.upgrade().ok_or_else(|| {
+            log::error!("{}  NotFound", src_path);
+            VfsError::NotFound
+        })?;
+        let old_node = node.clone().lookup(src_path);
+        let (_, des_rest) = split_path(dst_path);
+
+        node.children
+            .write()
+            .insert(des_rest.unwrap().to_string(), old_node.unwrap());
+        Ok(())
+    }
     axfs_vfs::impl_vfs_dir_default! {}
 }
 
